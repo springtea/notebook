@@ -46,9 +46,112 @@
 
 + 图形化工具gitk相当于git log的可视化工具
 
+```shell
+# git log 详细用法
+git log [<options>] [<since>..<until>] [[--] <path>...]
+
+# 显示参数
+
+-p：按补丁显示每个更新间的差异，比下一条- -stat命令信息更全
+--stat：显示每次更新的修改文件的统计信息，每个提交都列出了修改过的文件，以及其中添加和移除的行数，并在最后列出所有增减行数小计
+--shortstat：只显示--stat中最后的行数添加修改删除统计
+--name-only：尽在已修改的提交信息后显示文件清单
+--name-status：显示新增、修改和删除的文件清单
+--abbrev-commit：仅显示SHA-1的前几个字符，而非所有的40个字符
+--relative-date：使用较短的相对时间显示（例如："two weeks ago"）
+--graph：显示ASCII图形表示的分支合并历史
+—pretty＝：使用其他格式显示历史提交信息，可选项有：oneline,short,medium,full,fuller,email,raw以及format:<string>,默认为medium，如：
+--pretty=oneline：一行显示，只显示哈希值和提交说明（--online本身也可以作为单独的属性）
+--pretty=format:” "：控制显示的记录格式，如：
+    %H  提交对象（commit）的完整哈希字串
+    %h  提交对象的简短哈希字串
+    %T  树对象（tree）的完整哈希字串
+    %t  树对象的简短哈希字串
+    %P  父对象（parent）的完整哈希字串
+    %p  父对象的简短哈希字串
+    %an 作者（author）的名字
+    %ae 作者的电子邮件地址
+    %ad 作者修订日期（可以用 -date= 选项定制格式）
+    %ar 作者修订日期，按多久以前的方式显示
+    %cn 提交者(committer)的名字
+    作者和提交者的区别不知道是啥？
+    作者与提交者的关系：作者是程序的修改者，提交者是代码提交人（自己的修改不提交是怎么能让别人拉下来再提交的？）
+    其实作者指的是实际作出修改的人，提交者指的是最后将此工作成果提交到仓库的人。所以，当你为某个项目发布补丁，然后某个核心成员将你的补丁并入项目时，你就是作者，而那个核心成员就是提交者（soga）
+    %ce 提交者的电子邮件地址
+    %cd 提交日期（可以用 -date= 选项定制格式）
+    %cr 提交日期，按多久以前的方式显示
+    %s  提交说明
+带颜色的--pretty=format:""
+以这句为例：%Cred%h%Creset -%C(yellow)%d%Cblue %s %Cgreen(%cd) %C(bold blue)<%an>
+
+先断句：［%Cred%h］［%Creset   -］［%C(yellow)%d ］［%Cblue%s］［%Cgreen(%cd)］［%C(bold blue)<%an>］
+然后就是很明显能得到的规律了
+1.一个颜色＋一个内容
+2.颜色以％C开头，后边接几种颜色，还可以设置字体，如果要设置字体的话，要一块加个括号
+能设置的颜色值包括：reset（默认的灰色），normal, black, red, green, yellow, blue, magenta, cyan, white.
+3.字体属性则有bold, dim, ul, blink, reverse.  
+4.内容可以是占位元字符，也可以是直接显示的普通字符
+
+--date= (relative|local|default|iso|rfc|short|raw)：定制后边如果出现%ad或%cd时的日期格式
+有几个默认选项
+--date=relative：shows dates relative to the current time, e.g. "2 hours ago".
+--date=local：shows timestamps in user’s local timezone.
+--date=iso (or --date=iso8601)：shows timestamps in ISO 8601 format.
+--date=rfc (or --date=rfc2822)：shows timestamps in RFC 2822 format,often found in E-mail messages.
+--date=short：shows only date but not time, in YYYY-MM-DD format.这个挺好用
+--date=raw：shows the date in the internal raw git format %s %z format.
+--date=default：shows timestamps in the original timezone (either committer’s or author’s).
+也可以自定义格式（需要git版本2.6.0以上），比如--date=format:'%Y-%m-%d %H:%M:%S' 会格式化成：2016-01-13 11:32:13，其他的格式化占位符如下：
+    %a：Abbreviated weekday name
+    %A：Full weekday name
+    %b：Abbreviated month name
+    %B：Full month name
+    %c：Date and time representation appropriate for locale
+    %d：Day of month as decimal number (01 – 31)
+    %H： Hour in 24-hour format (00 – 23)
+    %I：Hour in 12-hour format (01 – 12)
+    %j：Day of year as decimal number (001 – 366)
+    %m：Month as decimal number (01 – 12)
+    %M：Minute as decimal number (00 – 59)
+    %p：Current locale's A.M./P.M. indicator for 12-hour clock
+    %S：Second as decimal number (00 – 59)
+    %U：Week of year as decimal number, with Sunday as first day of week (00 – 53)
+    %w：Weekday as decimal number (0 – 6; Sunday is 0)
+    %W：Week of year as decimal number, with Monday as first day of week (00 – 53)
+    %x：Date representation for current locale
+    %X：Time representation for current locale
+    %y：Year without century, as decimal number (00 – 99)
+    %Y：Year with century, as decimal number
+    %z, %Z：Either the time-zone name or time zone abbreviation, depending on registry settings; no characters if time zone is unknown
+    %%：Percent sign
+ 
+```
+
+
+
 `git reset HEAD filename`
 
 将不小心执行了git add命令的内容移出暂存区
+
+`git reset --hard commitID`
+
+回退到某个版本
+
+```shell
+# 回退到上个版本
+git reset --hard HEAD^
+
+# 回退到前3次提交以前，以此类推，回退到n次提交之前
+git reset --hard HEAD~3
+
+# git reset 参数：
+# 1. --soft:回退到某个版本，回退之前对工作区和暂存区的修改保存下来
+# 2. --hard:回退到某个版本，但回退之前所有的修改都会被删除，比如你回退之前，对某个文件进行了修改，回退之后，意味着这些修改也会被抹除
+# 3. --mixed(默认参数）：回退到某个版本但会保留工作区内容，清空暂存区
+
+```
+
+
 
 `git checkout --  filename`
 
@@ -204,6 +307,10 @@ $ git branch -a
 `git branch --no-merged`
 
 查看尚未合并的工作
+
+`git branch --merge`
+
+查看已合并到当前分支的分支
 
 **它会显示还未合并进来的分支。由于这些分支中还包含着尚未合并进来的工作成果，所以简单地用 `git branch -d` 删除该分支会提示错误，因为那样做会丢失数据**
 
