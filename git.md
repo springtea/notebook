@@ -62,7 +62,9 @@ git log [<options>] [<since>..<until>] [[--] <path>...]
 --graph：显示ASCII图形表示的分支合并历史
 —pretty＝：使用其他格式显示历史提交信息，可选项有：oneline,short,medium,full,fuller,email,raw以及format:<string>,默认为medium，如：
 --pretty=oneline：一行显示，只显示哈希值和提交说明（--online本身也可以作为单独的属性）
+
 --pretty=format:""：控制显示的记录格式，如：
+
     %H  提交对象（commit）的完整哈希字串
     %h  提交对象的简短哈希字串
     %T  树对象（tree）的完整哈希字串
