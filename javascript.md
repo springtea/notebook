@@ -1,5 +1,3 @@
-》<er,
-
 # 面试题 
 
 ## == 和 === 区别
@@ -379,8 +377,8 @@ console.log(+obj) // NaN
 在转换操作数的类型时，相等和不相等操作符遵循以下规则：
 
 1. 如果任一操作数是布尔值，则将其转换为数值再进行比较
-2. 如果任一操作数是字符串，另一个操作数是数值，则尝试将字符串转换为数值，在比较受否相等
-3. 如果一个操作数是对象，另一饿操作数不是，则调用对象的valueOf()方法取得其原始值，再根据前面的规则进行比较
+2. 如果任一操作数是字符串，另一个操作数是数值，则尝试将字符串转换为数值，在比较是否相等
+3. 如果一个操作数是对象，另一个操作数不是，则调用对象的valueOf()方法取得其原始值，再根据前面的规则进行比较
 
 在进行比较时：
 
@@ -405,7 +403,25 @@ console.log(null == 0) // false
 console.log("5" == 5)  // true
 ```
 
+#### 全等和不全等
 
+全等和不全等操作符与相等和不相等操作符类似，只不过它们在比较操作数时不转换操作数。
+
+```javascript
+console.log("" === false) // false
+console.log("22" === 22) // false
+console.log(null === undefined) // false
+console.log("NaN" === NaN) // false
+console.log(5 === NaN) // false
+console.log(NaN === NaN) // false
+console.log(NaN !== NaN) // true
+console.log(false === 0) // false
+console.log(true === 1) // false
+console.log(true === 2) // fasle
+console.log(undefined === 0) // false
+console.log(null === 0) // false
+console.log("5" === 5)  // false
+```
 
 
 
