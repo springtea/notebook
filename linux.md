@@ -503,3 +503,273 @@ declare -r
 
 ### 变量内容的删除，取代，替换
 
+我们先看几个例子：
+
+```shell
+# 场景：如果我们有一个很长的字符串，想从开头删除到某个指定的字符/字符串，而不是一个一个字				符删除，应该怎么做呢
+
+macos@Maclinux % content=helloworldhelloworldhelloworldhanhan
+macos@Mac linux % echo ${content##*world} #从开头开始删除，直到匹配到最后一个字符串‘world’
+hanhan   
+macos@Mac linux % echo $content
+helloworldhelloworldhelloworldhanhan
+macos@Mac linux % echo ${content#*world} #从开头开始删除，直到匹配到第一个字符串'world'
+helloworldhelloworldhanhan 
+
+# 总结：
+# ${变量#关键字}：若变量内容从头开始的数据符合“关键字”，则将符合的最短数据删除
+# ${变量##关键字}：若变量内容从头开始的数据符合“关键字”，则将符合的最长数据删除
+# 注意：*匹配大于等于0的任意字符
+```
+
+上面谈到的是“从前面开始删除变量内容”，那么如果想要“从后面向前删除变量内容”呢? 这个时候就得使用百分比 (%) 符号了：
+
+```shell
+# 例如：我想删除目录“/user/study/python/study/note"末尾的“/study/note"，该怎么做呢
+
+macos@MacOSdeMacBook-Pro linux % dir=/user/study/python/study/note
+macos@MacOSdeMacBook-Pro linux % echo ${dir%/study*}
+/user/study/python
+
+# 又如：我想删除目录“/user/study/python/study/note"中的部分，使结果为“/user”，该怎么做呢
+
+macos@MacOSdeMacBook-Pro linux % echo ${dir%%/study*}
+/user
+
+# 总结：
+# 1.${变量%关键字}：若变量内容从尾向前的数据符合“关键字”，则将符合的最短数据删除
+# 2.${变量%%关键字}：若变量内容从尾向前的数据符合“关键字”，则将符合的最长数据删除
+```
+
+场景：将 p 的变量内容内的 sbin 取代成大写 SBIN:
+
+```SHELL
+macos@MacOSdeMacBook-Pro linux % p=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/dmtsai/.local/bin:/home/dmtsai/bin
+macos@MacOSdeMacBook-Pro linux % echo ${p//sbin/SBIN}
+/usr/local/bin:/usr/bin:/usr/local/SBIN:/usr/SBIN:/home/dmtsai/.local/bin:/home/dmtsai/bin
+macos@MacOSdeMacBook-Pro linux % echo ${p/sbin/SBIN}
+/usr/local/bin:/usr/bin:/usr/local/SBIN:/usr/sbin:/home/dmtsai/.local/bin:/home/dmtsai/bin
+# 总结：
+# 1.${变量/旧字串/新字串}：若变量内容符合“旧字串”则“第一个旧字串会被新字串取代”
+# 2.${变量//旧字串/新字串}：若变量内容符合“旧字串”则“全部的旧字串会被新字串取代”
+```
+
+### 命令别名
+
+为命令设置别名：
+
+```shell
+macos@MacOSdeMacBook-Pro linux % alias lm='ls -al | more'
+macos@MacOSdeMacBook-Pro linux % lm # 这时lm就相当于 ls -al | more了
+# 取消别名
+unalias lm
+```
+
+### history
+
+显示最近的n条命令记录
+
+```shell
+history -n
+
+macos@MacOSdeMacBook-Pro linux % history -3
+ 1154  history 10
+ 1155  history -3
+ 1156  history -10
+```
+
+利用histroy指令执行命令
+
+```shell
+macos@MacOSdeMacBook-Pro linux % history -3
+ 1157  history -3
+ 1158  history -3
+ 1159  history -3
+ 
+ # 使用感叹号+history为我们展示的前面的数字，可以执行相应命令
+ # 使用方法为 !n
+ # !! :就是执行上一个指令(相当于按↑按键后，按 Enter)
+ 
+macos@MacOSdeMacBook-Pro linux % !1159 
+history -3
+ 1158  history -3
+ 1159  history -3
+ 1160  history -3
+ 
+macos@MacOSdeMacBook-Pro linux % !!
+history -3  # 执行的上一条命令
+ 1159  history -3
+ 1160  history -3
+ 1161  history -3
+
+```
+
+### 数据流重导向
+
+standard output与standard error output:
+
+简单的说，标准输出指的是“指令执行所回传的正确的讯息”，而标准错误输出可理解为“ 指令执行失败后，所回传的错误讯息”。		
+
+1. 标准输入  (stdin,Standard input) :代码为 0 ，使用 < 或 << 
+2. 标准输出  (stdout,standard output):代码为 1 ，使用 > 或 >> ; 
+3. 标准错误输出(stderr,standard error output):代码为 2 ，使用 2> 或 2>> ;	 
+
+```SHELL
+# 我们执行命令返回的结果通常是输出在终端窗口中，如果我们想让它的结果返回到指定的文件中，就可以使用标准输出
+echo 'hello world\nthis is a wonderful day' > hello.txt
+
+#  打开hello.txt，我们就能看到我们刚刚输入的内容了
+#  注意：
+#  1. 1> :以覆盖的方法将“正确的数据”输出到指定的文件或设备上; 
+#  2. 1>>:以累加的方法将“正确的数据”输出到指定的文件或设备上;
+
+# 有时我们输入错误命令或者其他情况导致返回错误的结果，我们可以把它返回到指定的文件中：
+
+macos@MacOSdeMacBook-Pro test % ccat hello.txt 2>> hello.txt
+macos@MacOSdeMacBook-Pro test % vim hello.txt 
+
+# 再打开刚刚的文件，发现下面追加了一行错误提示
+# 这便是我们执行错误命令返回的错误
+# 注意：
+# 1. 2> :以覆盖的方法将“错误的数据”输出到指定的文件或设备上; 
+# 2. 2>>:以累加的方法将“错误的数据”输出到指定的文件或设备上;
+# 要注意，“ 1>> ”以及“ 2>> ”中间是没有空格的!
+
+hello world
+this is a wonderful day
+zsh: command not found: ccat
+                          
+                         
+# 如果无论执行错误或者正确，我都想把返回结果返回到指定文件中，应该用什么指令呢
+macos@MacOSdeMacBook-Pro test % ls -al &> hello.txt # 覆盖
+macos@MacOSdeMacBook-Pro test % ls -al &>> hello.txt  # 追加
+macos@MacOSdeMacBook-Pro test % caat hello.txt &>> hello.txt 
+macos@MacOSdeMacBook-Pro test % ccat hello.txt >> hello.txt 2>&1 # 追加
+macos@MacOSdeMacBook-Pro test % ccat hello.txt > hello.txt 2>&1 # 覆盖
+
+```
+
+使用cat创建文件
+
+```SHELL
+# 如果test文件不存在，会自动创建。
+# 执行cat > test,输入内容将保存在test文件中
+# ctrl+d 结束输入
+
+macos@MacOSdeMacBook-Pro test % cat > test
+hello world
+my cat's name is hanhan
+ha
+macos@MacOSdeMacBook-Pro test % cat test
+hello world
+my cat's name is hanhan
+ha
+
+# 如果我们不想手动输入，而是想用某个文件的内容代替输入，就可以使用下面这种方式
+
+macos@MacOSdeMacBook-Pro test % cat > hanhan.txt < test
+macos@MacOSdeMacBook-Pro test % cat hanhan.txt 
+hello world
+my cat's name is hanhan
+ha
+# 此时，我们刚刚存入test文件中的内容就作为输入输出到hanhan.txt中了
+
+# 看下面这个例子。<< 这个连续两个小于的符号，代表的是“结束的输入字符”的意思
+macos@MacOSdeMacBook-Pro test % cat > catfile << 'eof'
+heredoc> this is a test
+heredoc> ok now stop
+heredoc> eof # 输入'eof'再按下回车键即结束输入
+macos@MacOSdeMacBook-Pro test % cat > catfile << 'h'
+heredoc> this is also a test
+heredoc> ok
+heredoc> now 
+heredoc> stop
+heredoc> h # 输入'h'再按下回车键即结束输入.这个字符取决于上面<<后的字符
+```
+
+**/dev/null** 垃圾桶黑洞设备与特殊写法
+
+如果我知道错误讯息会发生，所以要将错误讯息忽略掉而不显示或储存呢? 这个时候黑洞设备 /dev/null 就很重要了!
+
+```SHELL
+# 将错误的数据丢弃，屏幕上显示正确的数据
+macos@MacOSdeMacBook-Pro test % ccat hello.txt 2> /dev/null
+
+```
+
+### 命令执行的判断依据
+
+在某些时候，我们希望可以一次执行多个指令。
+
+**cmd ; cmd** (不考虑指令相关性的连续指令下达)
+
+在指令与指令中间利用分号 (;) 来隔开，这样一来，分号前的指令执行完后就会立刻接着执行后面的指令了。
+
+```shell
+ls -al;cat hello.txt
+```
+
+想象这样一个场景：我想要在某个目录下面创建一个文件，也就是说，如果该目录存在的话， 那我才创建这个文件，如果不存在，那就算了。 也就是说这两个指令彼此之间是有相关性的， 前一个指令是否成功的执行与后一个指令是否要执行有关!那就得动用到 && 或 || 。
+
++ `cmd1 && cmd2`
+
+1. 若 cmd1 执行完毕且正确执行(\$?=0)，则开始执行 cmd2。 
+2. 若 cmd1 执行完毕且为错误 ($?≠0)，则 cmd2 不执行。
+
++ `cmd1 || cmd2`
+
+1. 若 cmd1 执行完毕且正确执行(\$?=0)，则 cmd2 不执行。 
+2.  若 cmd1 执行完毕且为错误 ($?≠0)，则开始执行 cmd2。
+
+再复习一次，''若前一个指令执行的结果为正确，在 Linux 下面会回传 一个 $? = 0 的值"
+
+### 管线命令（pipe）
+
+管线命令“ | ”仅能处理经由前面一个指令传来的正确信息，也就是 standard output 的信 息，对于 stdandard error 并没有直接处理的能力。
+
++ 管线命令仅会处理 standard output，对于 standard error output 会予以忽略 
++ 管线命令必须要能够接受来自前一个指令的数据成为 standard input 继续处理才行。
+
+### 撷取命令: **cut,** **grep**
+
+```shell
+[dmtsai@study ~]$ cut -d'分隔字符' -f fields <==用于有特定分隔字符 
+[dmtsai@study ~]$ cut -c 字符区间 <==用于排列整齐的讯息 选项与参数:
+-d :后面接分隔字符。与 -f 一起使用;
+-f :依据 -d 的分隔字符将一段讯息分区成为数段，用 -f 取出第几段的意思;
+-c :以字符 (characters) 的单位取出固定字符区间;
+
+```
+
+范例一:将 PATH 变量取出，我要找出第3,4,5个路径。
+
+```SHELL
+macos@MacOSdeMacBook-Pro test % echo ${PATH}
+/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin
+macos@MacOSdeMacBook-Pro test % echo ${PATH} | cut -d ':' -f 3,4,5
+/bin:/usr/sbin:/sbin
+```
+
+范例二：新创建一个文件，读出这个文件每行第6个字符之后的内容
+
+```shell
+macos@MacOSdeMacBook-Pro test % cat > practice.txt
+hello this is the first line
+hello this is the second line
+hello this is the third line
+hello this is thie last line
+hello I'm just kidding
+hello this is not the last line
+hello hahaha
+macos@MacOSdeMacBook-Pro test % cat practice.txt | cut -c 6-
+ this is the first line
+ this is the second line
+ this is the third line
+ this is thie last line
+ I'm just kidding
+ this is not the last line
+ hahaha
+```
+
+
+
