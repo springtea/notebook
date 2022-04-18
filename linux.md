@@ -32,6 +32,7 @@ man命令中常用按键以及作用
 + Tab:实现对命令、参数或文件的内容补全
 + Ctrl + c: 当同时按下键盘上的Ctrl和字母c的时候，意味着终止当前进程的运行。
 + Ctrl + u/Ctrl + k: 分别是从光标处向前删除指令串或向后删除指令串
++ Ctrl + a/Ctrl + e:分别是让光标移动到整个指令串的最前面 ([ctrl]+a) 或最后面 ([ctrl]+e)。
 
 ## echo
 
@@ -202,6 +203,22 @@ vim /etc/paths
 
 `/usr/local/bin`目录是给用户放置自己的可执行程序的地方，推荐放在这里，不会被系统升级而覆盖同名文件。
 
+查看系统有哪些shell可用
+
+```shell
+cat /etc/shells
+
+/bin/bash
+/bin/csh
+/bin/dash
+/bin/ksh
+/bin/sh
+/bin/tcsh
+/bin/zsh
+```
+
+
+
 + `history`
 
   在命令行窗口种使用history命令会显示最近使用过的命令。这些历史被记录在～.zsh_history文件中。若使用bash，则记录在.bash_history中。
@@ -312,7 +329,7 @@ _=/usr/bin/env
 
 BASH中不仅有环境变量，还有一些与bash操作由关的变量，以及使用者自己定义的变量存在。这些变量可以使用
 
-`set`指令查看
+用 **set** 观察所有变量 (含环境变量与自订变量)
 
 ```shell
 set
@@ -771,5 +788,467 @@ macos@MacOSdeMacBook-Pro test % cat practice.txt | cut -c 6-
  hahaha
 ```
 
+grep
 
+刚刚的 cut 是将一行讯息当中，取出某部分我们想要的，而 grep 则是分析一行讯息， 若当中有我们所需要的信息，就将该行拿出来~ 简单的语法是这样的:
+
+```SHELL
+[dmtsai@study ~]$ grep [-acinv] [--color=auto] '搜寻字串' filename 选项与参数:
+-a :将 binary 文件以 text 文件的方式搜寻数据
+-c :计算找到 '搜寻字串' 的次数
+-i :忽略大小写的不同，所以大小写视为相同
+-n :顺便输出行号
+-v :反向选择，亦即显示出没有 '搜寻字串' 内容的那一行!
+--color=auto :可以将找到的关键字部分加上颜色的显示喔!
+范例一:将 last 当中，有出现 root 的那一行就取出来; 
+[dmtsai@study ~]$ last | grep 'root'
+
+范例二:与范例一相反，只要没有 root 的就取出! 
+[dmtsai@study ~]$ last | grep -v 'root'
+
+范例三:在 last 的输出讯息中，只要有 root 就取出，并且仅取第一栏 [dmtsai@study ~]$ last | grep 'root' |cut -d ' ' -f1
+# 在取出 root 之后，利用上个指令 cut 的处理，就能够仅取得第一栏啰!
+
+范例四:取出 /etc/man_db.conf 内含 MANPATH 的那几行
+[dmtsai@study ~]$ grep --color=auto 'MANPATH' /etc/man_db.conf ....(前面省略)....
+MANPATH_MAP /usr/games
+MANPATH_MAP /opt/bin
+MANPATH_MAP /opt/sbin
+# 神奇的是，如果加上 --color=auto 的选项，找到的关键字部分会用特殊颜色显示喔!
+```
+
+下面是grep用法的例子
+
+1.  搜寻特定字符串"the"，并忽略大小写。
+
+```shell
+macos@MacOSdeMacBook-Pro test % grep --color=auto -ni the reg.txt
+3:i think the weather is good
+5:the wheather is not good
+11:the weather is good
+12:The apple tastes good
+```
+
+2. 利用中括号 **[]** 来搜寻集合字符。
+
+   如果我想要搜寻 test 或 taste 这两个单字时，可以发现到，其实她们有共通的 't?st' 存在~这个时候，我可以这样来搜寻:
+
+```shell
+macos@MacOSdeMacBook-Pro test % grep --color=auto -ni 't[ae]st' reg.txt 
+1:this is a file for reg test
+12:The apple tastes good
+13:tasttest
+#  [] 里面不论有几个字符，他都仅代表某“一个”字符
+#  所以如果是teest，则不能匹配
+
+# 如果我想搜寻'oo'，但是希望前面不是字母，则可以这样写：
+macos@MacOSdeMacBook-Pro test % grep --color=auto -ni '[^a-z]oo' reg.txt 
+9:1oo
+10:2oo
+```
+
+3. 行首与行尾字符 **^ $**
+
+```SHELL
+# 搜寻行首以the开头的
+macos@MacOSdeMacBook-Pro test % grep -n '^the' reg.txt 
+5:the wheather is not good
+11:the weather is good
+
+# 搜寻不以字母开头的行
+macos@MacOSdeMacBook-Pro test % grep -n '^[^a-zA-Z]' reg.txt
+9:1oo
+10:2oo
+#  注意：^ 符号，在字符集合符号(括号[])之内与之外是不同的! 在 [] 内代表“反向选择”，在 [] 之外则代表定位在行首的意 义
+
+# 搜寻以.结束的行
+# 注意： 由于.是特殊字符，前面需要加上跳脱符号\
+macos@MacOSdeMacBook-Pro test % grep -n '\.$' reg.txt
+8:oo.
+9:1oo.
+
+```
+
+4. 任意一个字符 **.** 与重复字符 *
+
++ . (小数点):代表“一定有一个任意字符”的意思;
+
+* (星星号):代表“重复前一个字符， 0 到无穷多次”的意思，为组合形态
+
+
+
+#  正则表达式
+
+## sed
+
+
+
+```shell
+[dmtsai@study ~]$ sed [-nefr] [动作]
+选项与参数:
+-n :使用安静(silent)模式。在一般 sed 的用法中，所有来自 STDIN 的数据一般都会被列出到屏幕上。
+但如果加上 -n 参数后，则只有经过 sed 特殊处理的那一行(或者动作)才会被列出来。
+-e :直接在指令列模式上进行 sed 的动作编辑;
+-f :直接将 sed 的动作写在一个文件内， -f filename 则可以执行 filename 内的 sed 动作;
+-r :sed 的动作支持的是延伸型正则表达式的语法。(默认是基础正则表达式语法)
+-i :直接修改读取的文件内容，而不是由屏幕输出。
+动作说明: [n1[,n2]]function
+n1, n2 :不见得会存在，一般代表“选择进行动作的行数”，举例来说，如果我的动作
+是需要在 10 到 20 行之间进行的，则“ 10,20[动作行为] ”
+function 有下面这些咚咚:
+a :新增， a 的后面可以接字串，而这些字串会在新的一行出现(目前的下一行)~
+c :取代， c 的后面可以接字串，这些字串可以取代 n1,n2 之间的行!
+d :删除，因为是删除啊，所以 d 后面通常不接任何咚咚;
+i :插入， i 的后面可以接字串，而这些字串会在新的一行出现(目前的上一行);
+p :打印，亦即将某个选择的数据印出。通常 p 会与参数 sed -n 一起运行~
+s :取代，可以直接进行取代的工作哩!通常这个 s 的动作可以搭配正则表达式!
+例如 1,20s/old/new/g 就是啦!
+```
+
+
+
+```shell
+# 展示的内容中删除2到10行
+macos@MacOSdeMacBook-Pro test % nl reg.txt | sed '2,10d'
+     1	this is a file for reg test
+    11	the weather is good;
+    12	The apple tastes good
+    13	tasttest
+    
+# 如果是从第5行删除到最后一行，则如下：
+# 这里的$代表最后一行
+macos@MacOSdeMacBook-Pro test % nl reg.txt | sed '5,$d' 
+     1	this is a file for reg test
+     2	i have some food
+     3	i think the weather is good
+     4	i want to google 
+     
+# 删除空白行
+sed '/^$/d' file
+
+# 删除最后一行
+sed '$d' file
+
+# 在第二行至第五行的每行末尾添加内容
+macos@MacOSdeMacBook-Pro test % nl reg.txt | sed '2,5a hello'
+     1	this is a file for reg test
+     2	i have some food
+hello
+     3	i think the weather is good
+hello
+     4	i want to google 
+hello
+     5	the wheather is not good
+hello
+
+# 将第二行至第五行的内容替换
+macos@MacOSdeMacBook-Pro test % cat -n reg.txt | sed '2,5c hello'
+     1	this is a file for reg test
+hello
+     6	that man is fool
+     7	i am going to school
+     8	oo.
+   
+
+```
+
+MAC中sed用法和linux不同，如果想使用linux的sed，可以安装一个gsed
+
+```shell
+brew install gnu-sed
+alias sed=gsed
+```
+
+部分数据的搜寻并取代的功能
+
+```SHELL
+# 使用方法： sed 's/要被取代的字串/新的字串/g'
+macos@MacOSdeMacBook-Pro test % nl reg.txt | grep --color=auto 'the'
+     3	i think the weather is good
+     5	the wheather is not good
+    11	the weather is good;
+macos@MacOSdeMacBook-Pro test % nl reg.txt | grep --color=auto 'the' | sed 's/the/123/g'
+     3	i think 123 wea123r is good
+     5	123 whea123r is not good
+    11	123 wea123r is good;
+```
+
+直接修改文件内容(危险动作)
+
+```SHELL
+# sed 的“ -i ”选项可以直接修改文件内容
+macos@MacOSdeMacBook-Pro test % sed -i 's/the/123/g' reg.txt
+macos@MacOSdeMacBook-Pro test % cat reg.txt 
+this is a file for reg test
+i have some food
+i think 123 wea123r is good
+i want to google 
+123 whea123r is not good
+```
+
+# 文件权限和目录配置
+
+在我们Linux系统当中，默认的情况下，所有的系统上的帐号与一般身份使用者，还有那个root的相关信息， 都是记录在/etc/passwd这 个文件内的。至于个人的密码则是记录在/etc/shadow这个文件下。 此外，Linux所有的群组名称都纪录在/etc/group内!
+
+MAC下查看所有用户和组
+
+```shell
+dscacheutil -q group
+```
+
+mac下查看当前用户和组
+
+```shell
+groups # 查看当前用户所属组（注意：用户所属组可能有多个）
+groups user_name # 查看指定用户所属组
+id -a user_name # 查看指定用户所属组的详细信息
+whoami # 当前用户的用户名
+
+```
+
+mac下用户切换
+
+```shell
+sudo -i # 切换到root超级用户 ---- 需要输入密码
+su - macos # - 要切换到的用户名 // 切换到某一个普通用户 注意:横杠两边都有一个空格
+```
+
+## 改变文件权限
+
+### 改变文件所属组
+
+改变一个文件的群组真是很简单的，直接以chgrp来改变即可，这个指令就是change group的缩写嘛!这样就很好记了吧! 。不过，请记得，要被改变的群组名称必须要在/etc/group文件内存在才行，否则就会显示错误!
+
+```shell
+# 用法：root@study ~]# chgrp [-R] dirname/filename ...
+
+MacOSdeMacBook-Pro:test root# ls -al
+-rw-r--r--   1 macos  staff  220 Apr 12 21:59 reg.txt
+MacOSdeMacBook-Pro:test root# chgrp wheel reg.txt
+-rw-r--r--   1 macos  wheel  220 Apr 12 21:59 reg.txt
+```
+
+### 改变文件拥有者
+
+如何改变一个文件的拥有者呢?很简单呀!既然改变群组是change group，那么改变拥有者就是change owner!那就是 chown这个指令的用途，要注意的是， 使用者必须是已经存在系统中的帐号，也就是在/etc/passwd 这个文件中有纪录的使用者名称才能改变。
+
+chown的用途还满多的，他还可以顺便直接修改群组的名称呢!此外，如果要连目录下的所有次目录或文件同时更改文件拥有者的话， 直接加上 -R 的选项即可!
+
+```shell
+# 用法：
+# [root@study ~] chown [-R] 帐号名称 文件或目录
+# [root@study ~] chown [-R] 帐号名称:群组名称 文件或目录
+MacOSdeMacBook-Pro:test root# chown root:staff reg.txt 
+```
+
+### 改变权限
+
+文件权限的改变使用的是chmod这个指令，但是，权限的设置方法有两种， 分别可以使用数字或者是符号来进行权限的变更。
+
+1. 数字类型改变文件权限
+
+   Linux文件的基本权限就有九个，分别是owner/group/others三种身份各有自己的read/write/execute权限， 先复习一下刚刚上面提到的数据文件的权限字符为:“-rwxrwxrwx”， 这九个权限是三个三个一组的!其中，我们可以使用数字来代表各个权限，各权限的分数对照表 如下:
+
+   **r:4 w:2 x:1**
+
+   每种身份(owner/group/others)各自的三个权限(r/w/x)分数是需要累加的，例如当权限为: [-rwxrwx---] 分数则是:
+
+   owner=rwx=4+2+1=7 
+
+   group=rwx=4+2+1=7 
+
+   others= --- = 0+0+0 = 0
+
+   ```SHELL
+   MacOSdeMacBook-Pro:test root# ls -al
+   -rw-r--r--   1 root   staff  220 Apr 12 21:59 reg.txt
+   MacOSdeMacBook-Pro:test root# chmod 764 reg.txt 
+   -rwxrw-r--   1 root   staff  220 Apr 12 21:59 reg.txt
+   ```
+
+2. 符号类型改变文件权限
+
+   还有一个改变权限的方法呦!从之前的介绍中我们可以发现，基本上就九个权限分别是(1)user (2)group (3)others三种身份! 那么我们就可以借由**u, g, o**来代表三种身份的权限!此外， **a** 则代表 all 亦即全部的身份!那么读写的权限就可以写成r, w, x!
+
+   ```shell
+   # 1. 假如我们要“设置”一个文件的权限成为“-rwxr-xr-x”
+   chomod u=rwx,go=rx reg.txt
+   -rwxr-xr-x   1 root   staff  220 Apr 12 21:59 reg.txt
+   
+   # 2. 假如是“ -rwxr-xr-- ”这样的权限呢
+   chmod u=rwx,g=rx,o=r file
+   
+   # 3. 如果我不知道原先的文件属性，而我只想要增加.bashrc这个文件的每个人均可写入的权限
+   chmod a+w .bashrc
+   
+   # 4. 而如果是要将权限去掉而不更动其他已存在的权限呢?例如要拿掉全部人的可执行权限:
+   chmod a-x .bashrc
+   
+   ```
+
+
+
+## 目录与文件的权限意义
+
+**权限对文件的重要性：**
+
+文件是实际含有数据的地方，包括一般文本文件、数据库内容档、二进制可可执行文件(binary program)等等。 因此，权限对于文件来说，他的意义是这样的:
+
+1. r (read):可读取此一文件的实际内容，如读取文本文件的文字内容等;
+2. w (write):可以编辑、新增或者是修改该文件的内容(但不含删除该文件); 
+3. x (eXecute):该文件具有可以被系统执行的权限。
+
+注意：在Linux下面，我们的文件是否能被执行，则是借由是否具有“x”这个权 限来决定的!跟文件名是没有绝对的关系的!
+
++ 当你对一个文件具有w权限时，你可以具有写入/编辑/新增/修改文件的内容的权限， 但并不具备有删除该 文件本身的权限!对于文件的rwx来说， 主要都是针对“文件的内容”而言，与文件文件名的存在与否没有关系喔!因为文件记录的是实际的数据 嘛!
+
+
+
+**权限对目录的重要性：**
+
+1. **r** (**read contents in directory**)
+
+   表示具有读取目录结构清单的权限，所以当你具有读取(r)一个目录的权限时，表示你可以查询该目录下的文件名数据。 所以你就可以 利用 ls 这个指令将该目录的内容列表显示出来!
+
+2. **w** (**modify contents of directory**):
+
+   写入权限对目录的权限如下：
+
+   + 创建新的文件和目录
+   + 删除依据存在的文件与目录（不管文件的权限是什么）
+   + 将已经存在的文件或目录更名
+   + 搬移该目录内的文件，目录位置
+
+3. **x** (**access directory**):
+
+   目录的x代表的是使用者能否进入该目录成为工作目录
+
+```shell
+# 例如：
+# drwxr--r-- 3 root root 4096 Jun 25 08:35 .ssh
+# 系统有个帐号名称为vbird，这个帐号并没有支持root群组，请问vbird对这个目录有何权限?是否可切换到此目录中?
+# vbird可以查询此目录下的文件名列表，但因为没有x权限，并不能切换到此目录内
+# 如果你在某目录下不具有x的权限， 那么你就无法切换到该目录下，也就无法执行该目录下的任何指令，即使你具有该目录的r或w的权限。
+# 要注意:要开放目录给任何人浏览时，应该至少也要给予r及x的权限，但w权限不可随便给!
+```
+
+```shell
+# 例题:
+假设有个帐号名称为dmtsai，他的主文件夹在/home/dmtsai/，dmtsai对此目录具有[rwx]的权限。 若在此目录下有个名为 the_root.data的文件，该文件的权限如下:
+-rwx------ 1 root root 4365 Sep 19 23:20 the_root.data
+请问dmtsai对此文件的权限为何?可否删除此文件? 
+如上所示，由于dmtsai对此文件来说是“others”的身份，因此这个文件他无法读、无法编辑也无法执行， 也就是说，他无法变动 这个文件的内容就是了。
+但是由于这个文件在他的主文件夹下， 他在此目录下具有rwx的完整权限，因此对于the_root.data这个“文件名”来说，他是能 够“删除”的! 结论就是，dmtsai这个用户能够删除the_root.data这个文件!
+```
+
+
+
+# linux账号管理
+
+每个登陆的使用 者至少都会取得两个 ID ，一个是使用者 ID (User ID ，简称 UID)、一个是群组 ID (Group ID ，简称 GID)。
+
+这个文件的构造是这样的:每一行都代表一个帐号，有几行就代表有几个帐号在你的系统中! 不过需要特别留意的是，里头很多帐号本来就是系统正常运行所必须要的，我们可以简称他为系统帐号， 例如 bin, daemon, adm, nobody 等等
+
+注意：mac系统下的用户操作跟常见的Linux系统有很大的不同。
+
+下面是mac系统操作用户和组的方法：
+
+1. 查看所有的组
+
+   ```shell
+   dscl
+   cd /Local/Default/Groups
+   ls
+   
+   # 或者
+   dscl . -list /Groups
+   # 如需查看各组ID
+   dscl . -list /Groups PrimaryGroupID
+   
+   dscl . -readall /groups
+   
+   # 查看指定的组
+   dscl . -read /Groups/admin
+   ```
+
+2. 查看所有的用户
+
+   ```shell
+   dscl
+   cd /Local/Default/Users
+   ls
+   
+   # 或者
+   dscl . -list /Users
+   
+   # 如需查看各用户ID
+   dscl . -list /Users UniqueID
+   
+   
+   
+   ```
+
+3. 查看指定用户macos的所属组id
+
+   ```shell
+   # 查看指定用户macos的详细信息
+   dscl . -read /Users/macos
+   
+   # 单独查看指定用户的ID
+   dscl . -read /Users/macos PrimaryGroupID
+   
+   # 查看指定用户的ID与真实名字
+   dscl . -read /Users/maacos PrimaryGroupID RealName
+   ```
+
+4. 查看指定组`admin`中的用户:
+
+   ```shell
+   dscl . -read /Groups/admin
+   dscl . -read /Groups/admin GroupMembership
+   ```
+
+5. 创建组:
+
+   ```shell
+   dscl . create /Groups/test_group
+   # 此处未指定gid, 那么通过dscl . -list /Groups PrimaryGroupID命令会查询不到，而应该使用dscl . -list /Groups
+   
+   # 给创建的组创建ID       PrimaryGroupID
+   dscl . create /Groups/test_group gid 296
+   
+   sudo dscl . -create /groups/test_group
+   sudo dscl . -append /groups/test_group gid 4200
+   sudo dscl . -append /groups/test_group passwd "nicepwd"
+   
+   # 以下命令,会自动创建groupid
+   sudo dseditgroup -o create test_group
+   ```
+
+6. 删除组
+
+   ```shell
+   dscl . -delete /Groups/test_group
+   ```
+
+7. 创建指定用户test_user
+
+   ```shell
+   dscl . -create /Users/test_user
+   dscl . -create /Users/test_user UserShell /bin/bash
+   dscl . -create /Users/test_user RealName "Lucius Q. User"
+   
+   // 注意 UniqueID必须唯一
+   dscl . -create /Users/test_user UniqueID "1010"
+   dscl . -create /Users/test_user PrimaryGroupID 80
+   dscl . -create /Users/test_user NFSHomeDirectory /Users/test_user
+   
+   // 修改密码
+   dscl . -passwd /Users/test_user 'goodpwd'
+   
+   // 加入指定用户组`admin`
+   dscl . -append /Groups/admin GroupMembership test_user
+   ```
+
+   
 
